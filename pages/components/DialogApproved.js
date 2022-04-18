@@ -1,4 +1,4 @@
-export default function DialogApproved({onSubmit, onCancel}) {
+export default function DialogApproved({onSubmit, onCancel, result}) {
   return (
     <div className="modal modal-open">
       <div className="modal-box relative">
@@ -9,16 +9,26 @@ export default function DialogApproved({onSubmit, onCancel}) {
           </div>
 
           <div className="flex justify-center p-4 overflow-x-auto">
-            <table class="table w-full">
+            <table className="table w-full">
               <tbody>
                 <tr>
-                  <th>Method</th>
-                  <td>Cy Ganderton</td>
+                  <td>Method</td>
+                  <td>{result.method}</td>
                 </tr>
-                <tr>
-                  <th>Atomic group</th>
-                  <td>Hart Hagerty</td>
-                </tr>
+                {result.body.map((signedTxns, index) => (
+                  <tr key={index}>
+                    <td>{`Atomic group ${index}`}</td>
+                    <td>
+                      {signedTxns.map((txn, txnIndex) => (
+                        <div key={txnIndex}>
+                          {!!txn?.txID && <p>TxID: {txn.txID}</p>}
+                          {!!txn?.signature && <p>Sig: {txn.signature}</p>}
+                          {!!txn?.signingAddress && <p>AuthAddr: {txn.signingAddress}</p>}
+                        </div>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

@@ -10,7 +10,7 @@ const mainNetServer = 'https://mainnet-algorand.api.purestake.io/ps2';
 const testNetServer = 'https://testnet-algorand.api.purestake.io/ps2';
 const port = '';
 const token = {
-    'X-API-Key': 'ZiWAllBS0M632WEpDdSnCkUaLi8bnahaFGEItine'
+    'X-API-Key': process.env.NEXT_PUBLIC_PURESTAKE_TOKEN
 }
 const mainNetClient = new algosdk.Algodv2(token, mainNetServer, port);
 const testNetClient = new algosdk.Algodv2(token, testNetServer, port);
