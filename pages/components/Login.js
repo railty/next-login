@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AppContext, actions, toShortString } from "../AppState";
 import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
@@ -43,6 +43,11 @@ export const Login = () => {
 
     dispatch({ type: actions.SET_CONNECTOR, connector: connector });
   }
+
+  useEffect(()=>{
+    connect();
+  }, []);
+
 
   if (state.connector?.connected) return (
     <div className="flex flex-row items-center">

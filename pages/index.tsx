@@ -1,13 +1,11 @@
 import Head from 'next/head';
+import { useContext } from "react";
 import { Login } from "./components/Login";
 import { Account } from "./components/Account";
+import { SinglePay } from "./components/SinglePay";
 import { Provider } from "./AppState";
 
 export default function Home() {
-  const pay = ()=>{
-    console.log("pay");
-  }
-
   return (
     <Provider>
 
@@ -28,7 +26,7 @@ export default function Home() {
       </div>
 
       <main className='p-4'>
-        <button className='btn btn-sm btn-primary' onClick={pay}>Pay</button>
+        <SinglePay />
       </main>
 
     </div>

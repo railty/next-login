@@ -1,4 +1,5 @@
 import algosdk from "algosdk";
+import WalletConnect from "@walletconnect/client";
 import { apiGetTxnParams, ChainType } from "./helpers/api";
 
 const testAccounts = [
@@ -76,7 +77,7 @@ function getAppIndex(chain: ChainType): number {
 
 const addressSeller = "ANECSLG4SEELAPH62VD6MAQUHHBLEMUCESOE3YPWSP4VDHP5PQJEZVUNSM";
 
-const singlePayTxn: Scenario = async (
+export const singlePayTxn: Scenario = async (
   chain: ChainType,
   address: string,
 ): Promise<ScenarioReturnType> => {
@@ -289,3 +290,142 @@ export const scenarios: Array<{ name: string; scenario: Scenario }> = [
     scenario: singleAppClearState,
   },
 ];
+
+export const signTxnScenario = async (connector: WalletConnect, address: string, chain: ChainType, scenario: Scenario) => {
+/*
+  const connector: WalletConnect = state.connector;
+  const address: string = state.address;
+  const chain: ChainType = state.chain;
+
+  const { connector: WalletConnect, address: string, chain: ChainType } = ...state;
+*/
+
+  if (!connector) return;
+
+  try {
+    debugger;
+    const txnsToSign = await scenario(chain, address);
+
+    // open modal
+    this.toggleModal();
+
+    // toggle pending request indicator
+    this.setState({ pendingRequest: true });
+
+    const flatTxns = txnsToSign.reduce((acc, val) => acc.concat(val), []);
+
+    const walletTxns: IWalletTransaction[] = flatTxns.map(
+      ({ txn, signers, authAddr, message }) => ({
+        txn: Buffer.from(algosdk.encodeUnsignedTransaction(txn)).toString("base64"),
+        signers, // TODO: put auth addr in signers array
+        authAddr,
+        message,
+      }),
+    );
+
+    // sign transaction
+    const requestParams: SignTxnParams = [walletTxns];
+    const request = formatJsonRpcRequest("algo_signTxn", requestParams);
+    const result: Array<string | null> = await connector.sendCustomRequest(request);
+
+    console.log("Raw response:", result);
+
+    const indexToGroup = (index: number) => {
+      for (let group = 0; group < txnsToSign.length; group++) {
+        const groupLength = txnsToSign[group].length;
+        if (index < groupLength) {
+          return [group, index];
+        }
+
+        index -= groupLength;
+      }
+
+      throw new Error(`Index too large for groups: ${index}`);
+    };
+
+    const signedPartialTxns: Array<Array<Uint8Array | null>> = txnsToSign.map(() => []);
+    result.forEach((r, i) => {
+      const [group, groupIndex] = indexToGroup(i);
+      const toSign = txnsToSign[group][groupIndex];
+
+      if (r == null) {
+        if (toSign.signers !== undefined && toSign.signers?.length < 1) {
+          signedPartialTxns[group].push(null);
+          return;
+        }
+        throw new Error(`Transaction at index ${i}: was not signed when it should have been`);
+      }
+
+      if (toSign.signers !== undefined && toSign.signers?.length < 1) {
+        throw new Error(`Transaction at index ${i} was signed when it should not have been`);
+      }
+
+      const rawSignedTxn = Buffer.from(r, "base64");
+      signedPartialTxns[group].push(new Uint8Array(rawSignedTxn));
+    });
+
+    const signedTxns: Uint8Array[][] = signedPartialTxns.map(
+      (signedPartialTxnsInternal, group) => {
+        return signedPartialTxnsInternal.map((stxn, groupIndex) => {
+          if (stxn) {
+            return stxn;
+          }
+
+          return signTxnWithTestAccount(txnsToSign[group][groupIndex].txn);
+        });
+      },
+    );
+
+    const signedTxnInfo: Array<Array<{
+      txID: string;
+      signingAddress?: string;
+      signature: string;
+    } | null>> = signedPartialTxns.map((signedPartialTxnsInternal, group) => {
+      return signedPartialTxnsInternal.map((rawSignedTxn, i) => {
+        if (rawSignedTxn == null) {
+          return null;
+        }
+
+        const signedTxn = algosdk.decodeSignedTransaction(rawSignedTxn);
+        const txn = (signedTxn.txn as unknown) as algosdk.Transaction;
+        const txID = txn.txID();
+        const unsignedTxID = txnsToSign[group][i].txn.txID();
+
+        if (txID !== unsignedTxID) {
+          throw new Error(
+            `Signed transaction at index ${i} differs from unsigned transaction. Got ${txID}, expected ${unsignedTxID}`,
+          );
+        }
+
+        if (!signedTxn.sig) {
+          throw new Error(`Signature not present on transaction at index ${i}`);
+        }
+
+        return {
+          txID,
+          signingAddress: signedTxn.sgnr ? algosdk.encodeAddress(signedTxn.sgnr) : undefined,
+          signature: Buffer.from(signedTxn.sig).toString("base64"),
+        };
+      });
+    });
+
+    console.log("Signed txn info:", signedTxnInfo);
+
+    // format displayed result
+    const formattedResult: IResult = {
+      method: "algo_signTxn",
+      body: signedTxnInfo,
+    };
+
+    // display result
+    this.setState({
+      connector,
+      pendingRequest: false,
+      signedTxns,
+      result: formattedResult,
+    });
+  } catch (error) {
+    console.error(error);
+    this.setState({ connector, pendingRequest: false, result: null });
+  }
+};

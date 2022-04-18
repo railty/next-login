@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContext, actions, toNumber } from "../AppState";
-import { ChainType, apiGetAccountAssets } from "../api";
+import { ChainType, apiGetAccountAssets } from "../helpers/api";
 
 export const Account = () => {
   const { state, dispatch } = useContext(AppContext);
