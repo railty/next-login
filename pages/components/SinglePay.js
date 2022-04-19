@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContext, actions, toNumber } from "../AppState";
 import { ChainType, apiGetAccountAssets } from "../helpers/api";
-import { signTxnScenario, singlePayTxn } from "../scenarios";
+import { signTxnScenario, singlePayTxn, createSinglePayTxn, createSignTxnsRequest, parseResult } from "../scenarios";
 import DialogPending from "./DialogPending";
 import DialogApproved from "./DialogApproved";
 
@@ -10,12 +10,31 @@ export const SinglePay = () => {
   const [showApproved, setShowApproved] = useState(false);
   const { state, dispatch } = useContext(AppContext);
 
-  
-  const pay = ()=>{
-    debugger;
+  const pay = async ()=>{
+    const txnsToSign = await createSinglePayTxn(ChainType.TestNet, state.connector.accounts[0], process.env.NEXT_PUBLIC_TEST1, 0.1, "note", "message");
+    const request = await createSignTxnsRequest(txnsToSign);
 
-    console.log(process.env.NEXT_PUBLIC_DB_HOST);
-    signTxnScenario(state.connector, state.connector.accounts[0], ChainType.TestNet, singlePayTxn, setShowPending, setShowApproved);
+    setShowPending(true);
+    let result = null;
+    try{
+      result = await state.connector.sendCustomRequest(request);
+      console.log(result);
+      const rawSignedTxn = Buffer.from(result[0], "base64");
+      console.log(rawSignedTxn);
+    }
+    catch(ex){
+      console.log(ex.toString());
+    }
+    setShowPending(false);
+
+    const parsetResult = parseResult(txnsToSign, result);
+    console.log(parsetResult);
+
+    const formattedResult: IResult = {
+      method: "algo_signTxn",
+      body: signedTxnInfo,
+    };
+
   }
 
 
