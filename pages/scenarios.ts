@@ -4,7 +4,7 @@ import { apiGetTxnParams, ChainType } from "./helpers/api";
 import { IWalletTransaction, SignTxnParams } from "./helpers/types";
 import { formatJsonRpcRequest } from "@json-rpc-tools/utils";
 
-interface IResult {
+export interface IResult {
   method: string;
   body: Array<
     Array<{
@@ -691,4 +691,5 @@ export const signTxnScenario2 = async (connector: WalletConnect, address: string
       body: signedTxnInfo,
     };
 
+    return formattedResult;
   }

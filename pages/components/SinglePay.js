@@ -1,48 +1,84 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContext, actions, toNumber } from "../AppState";
 import { ChainType, apiGetAccountAssets } from "../helpers/api";
-import { signTxnScenario, singlePayTxn, createSinglePayTxn, createSignTxnsRequest, parseResult } from "../scenarios";
-import DialogPending from "./DialogPending";
-import DialogApproved from "./DialogApproved";
+import { IResult, signTxnScenario, singlePayTxn, createSinglePayTxn, createSignTxnsRequest, parseResult } from "../scenarios";
+import Dialog from "./Dialog";
+import TxInfo from "./TxInfo";
 
 export const SinglePay = () => {
-  const [showPending, setShowPending] = useState(false);
-  const [showApproved, setShowApproved] = useState(false);
+  const [dialogPending, setDialogPending] = useState({
+    show: false,
+    title: "Pending Call Request",
+  });
+  const [dialogApproved, setDialogApproved] = useState({
+    show: false,
+    title: "Call Request Approved",
+  });
+  const [txs, setTxs] = useState(null);
+
   const { state, dispatch } = useContext(AppContext);
 
   const pay = async ()=>{
     const txnsToSign = await createSinglePayTxn(ChainType.TestNet, state.connector.accounts[0], process.env.NEXT_PUBLIC_TEST1, 0.1, "note", "message");
     const request = await createSignTxnsRequest(txnsToSign);
 
-    setShowPending(true);
+    setDialogPending({...dialogPending, show: true});
     let result = null;
     try{
       result = await state.connector.sendCustomRequest(request);
       console.log(result);
+      console.log("strResult = ", JSON.stringify(result));
+
       const rawSignedTxn = Buffer.from(result[0], "base64");
-      console.log(rawSignedTxn);
+      console.log("rawSignedTxn = ", rawSignedTxn);
     }
     catch(ex){
-      console.log(ex.toString());
+      console.log("ex = ", ex.toString());
     }
-    setShowPending(false);
+    setDialogPending({...dialogPending, show: false});
 
-    const parsetResult = parseResult(txnsToSign, result);
-    console.log(parsetResult);
+    const parsedResult = parseResult(txnsToSign, result);
+    console.log("parsedResult=", parsedResult);
 
+    setTxs(parsedResult);
+
+    setDialogApproved({
+      ...dialogApproved,
+      show: true,
+    });
+
+    /*
     const formattedResult: IResult = {
       method: "algo_signTxn",
       body: signedTxnInfo,
     };
-
+    */
   }
 
 
   if (state.connector?.connected) return (
     <>
       <button className='btn btn-sm btn-primary' onClick={pay}>Pay</button>
-      {showPending && <DialogPending onSubmit={null} onCancel={()=>setShowPending(false)}/>}
-      {showApproved && <DialogApproved onSubmit={null} onCancel={()=>setShowApproved(false)}/>}
+
+      <Dialog state={[dialogPending, setDialogPending]} >
+        <div className="flex justify-center p-4 ">
+          <button className="btn btn-circle btn-accent loading"></button>
+        </div>
+
+        <div className="flex justify-center p-4">
+          <div className="font-bold">Approve or reject request using your wallet</div>
+        </div>
+      </Dialog>
+
+      <Dialog state={[dialogApproved, setDialogApproved]} >
+        <div className="flex justify-center p-4 overflow-x-auto">
+          <TxInfo txs={txs}/>
+        </div>
+
+        <div className="flex justify-center p-4">
+          <button className="btn btn-primary">Submit to network</button>
+        </div>
+      </Dialog>
 
     </>
   )

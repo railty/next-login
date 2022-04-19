@@ -1,17 +1,27 @@
 import { useState } from "react";
-import DialogPending from "./components/DialogPending";
+import Dialog from "./components/Dialog";
 import DialogApproved from "./components/DialogApproved";
 import DialogRejected from "./components/DialogRejected";
 
 export default function Home() {
 
-  const [showPending, setShowPending] = useState(false);
+  const [datPending, setDatPending] = useState({
+    show: false, 
+    title: "Pending Call Request",
+  });
+
   const [showApproved, setShowApproved] = useState(false);
-  const [showRejected, setShowRejected] = useState(false);
+  const [datRejected, setDatRejected] = useState({
+    show: false, 
+    title: "Call Request Rejected",
+  });
 
   const pending = ()=>{
-    console.log("pay");
-    setShowPending(true);
+    console.log("pending");
+    setDatPending({
+      ...datPending,
+      show: true
+    });
   }
   const approved = ()=>{
     console.log("approve");
@@ -19,8 +29,11 @@ export default function Home() {
   }
 
   const rejected = ()=>{
-    console.log("rejected");
-    setShowRejected(true);
+    setDatRejected({
+      ...datRejected,
+      title: "dadadada",
+      show: true
+    });
   }
 
   return (
@@ -41,10 +54,18 @@ export default function Home() {
         </div>
         
       </div>
+      <Dialog state={[datPending, setDatPending]} >
+        <div className="flex justify-center p-4 ">
+          <button className="btn btn-circle btn-accent loading"></button>
+        </div>
 
-      {showPending && <DialogPending onSubmit={null} onCancel={()=>setShowPending(false)}/>}
+        <div className="flex justify-center p-4">
+          <div className="font-bold">Approve or reject request using your wallet</div>
+        </div>
+      </Dialog>
+
       {showApproved && <DialogApproved onSubmit={null} onCancel={()=>setShowApproved(false)}/>}
-      {showRejected && <DialogRejected onCancel={()=>setShowRejected(false)}/>}
+      <Dialog state={[datRejected, setDatRejected]} />
     </div>
   )
 }
