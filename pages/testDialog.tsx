@@ -66,6 +66,12 @@ export default function Home() {
 
       {showApproved && <DialogApproved onSubmit={null} onCancel={()=>setShowApproved(false)}/>}
       <Dialog state={[datRejected, setDatRejected]} />
+
+      <dialog open className="border-2">
+        <h1>This is an open dialog window</h1>
+        <p>This is an open dialog window</p>
+
+      </dialog>
     </div>
   )
 }

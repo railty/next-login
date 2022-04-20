@@ -637,7 +637,10 @@ export const signTxnScenario2 = async (connector: WalletConnect, address: string
       const rawSignedTxn = Buffer.from(r, "base64");
       signedPartialTxns[group].push(new Uint8Array(rawSignedTxn));
     });
-
+//break the above to a function
+//return signedPartialTxns
+//signedPartialTxns will become signedTxns for 1 func, and used in submit
+//signedPartialTxns will become signedTxnInfo for another func, and used in display in modal
     const signedTxns: Uint8Array[][] = signedPartialTxns.map(
       (signedPartialTxnsInternal, group) => {
         return signedPartialTxnsInternal.map((stxn, groupIndex) => {

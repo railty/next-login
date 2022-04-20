@@ -55,6 +55,46 @@ export const SinglePay = () => {
     */
   }
 
+  const submit = ()=>{
+    console.log("submit");
+
+    //this.setState({ pendingSubmissions: signedTxns.map(() => 0) });
+    const chain = ChainType.TestNet;
+
+    txs.forEach(async (signedTxn, index) => {
+      try {
+        const confirmedRound = await apiSubmitTransactions(chain, signedTxn);
+/*
+        this.setState(prevState => {
+          return {
+            pendingSubmissions: prevState.pendingSubmissions.map((v, i) => {
+              if (index === i) {
+                return confirmedRound;
+              }
+              return v;
+            }),
+          };
+        });
+*/
+        console.log(`Transaction confirmed at round ${confirmedRound}`);
+      } catch (err) {
+/*        
+        this.setState(prevState => {
+          return {
+            pendingSubmissions: prevState.pendingSubmissions.map((v, i) => {
+              if (index === i) {
+                return err;
+              }
+              return v;
+            }),
+          };
+        });
+*/
+        console.error(`Error submitting transaction at index ${index}:`, err);
+      }
+    });
+
+  }
 
   if (state.connector?.connected) return (
     <>
@@ -76,7 +116,7 @@ export const SinglePay = () => {
         </div>
 
         <div className="flex justify-center p-4">
-          <button className="btn btn-primary">Submit to network</button>
+          <button className="btn btn-primary" onClick={submit}>Submit to network</button>
         </div>
       </Dialog>
 
