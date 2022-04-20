@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { Login } from "./components/Login";
 import { Account } from "./components/Account";
 import { SinglePay } from "./components/SinglePay";
+import { SinglePayWithClose } from "./components/SinglePayWithClose";
 import { Provider } from "./AppState";
 
 export default function Home() {
@@ -27,6 +28,7 @@ export default function Home() {
 
       <main className='p-4'>
         <SinglePay />
+        <SinglePayWithClose />
       </main>
 
     </div>

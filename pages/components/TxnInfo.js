@@ -1,12 +1,12 @@
-export default function TxInfo({txs}) {
+export default function TxnInfo({txns}) {
   return (
     <table className="table w-full">
       <tbody>
         <tr>
           <td>Method</td>
-          <td>{txs.method}</td>
+          <td>{txns.method}</td>
         </tr>
-        {txs.body.map((signedTxns, index) => (
+        {txns.body.map((signedTxns, index) => (
           <tr key={index}>
             <td>{`Atomic group ${index}`}</td>
             <td>

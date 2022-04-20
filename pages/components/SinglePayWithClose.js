@@ -1,12 +1,12 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContext, actions, toNumber } from "../AppState";
 import { ChainType, apiGetAccountAssets, apiSubmitTransactions } from "../helpers/api";
-import { createSignTxnsRequest, createSinglePayTxns, getConfirmedTxs, getSignedTxns, getSignedTxnInfo } from "../helpers/transaction";
+import { createSignTxnsRequest, createSinglePayWithCloseTxns, getConfirmedTxs, getSignedTxns, getSignedTxnInfo } from "../helpers/transaction";
 import { IResult, signTxnScenario, singlePayTxn } from "../scenarios";
 import Dialog from "./Dialog";
 import TxnInfo from "./TxnInfo";
 
-export const SinglePay = () => {
+export const SinglePayWithClose = () => {
   const [dialogPending, setDialogPending] = useState({
     show: false,
     title: "Pending Call Request",
@@ -21,7 +21,7 @@ export const SinglePay = () => {
   const { state, dispatch } = useContext(AppContext);
 
   const pay = async ()=>{
-    const txns = await createSinglePayTxns(ChainType.TestNet, state.connector.accounts[0], process.env.NEXT_PUBLIC_TEST1, 0.1, "note", "message");
+    const txns = await createSinglePayWithCloseTxns(ChainType.TestNet, state.connector.accounts[0], process.env.NEXT_PUBLIC_TEST1, 0.1, "note", "message");
     const request = await createSignTxnsRequest(txns);
 
     setDialogPending({...dialogPending, show: true});
@@ -92,7 +92,7 @@ export const SinglePay = () => {
 
   if (state.connector?.connected) return (
     <>
-      <button className='btn btn-sm btn-primary m-4' onClick={pay}>Single Pay</button>
+      <button className='btn btn-sm btn-primary m-4' onClick={pay}>SinglePayWithClose</button>
 
       <Dialog state={[dialogPending, setDialogPending]} >
         <div className="flex justify-center p-4 ">
