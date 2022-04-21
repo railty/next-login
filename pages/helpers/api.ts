@@ -15,7 +15,7 @@ const token = {
 const mainNetClient = new algosdk.Algodv2(token, mainNetServer, port);
 const testNetClient = new algosdk.Algodv2(token, testNetServer, port);
 
-function clientForChain(chain: ChainType): algosdk.Algodv2 {
+export function clientForChain(chain: ChainType): algosdk.Algodv2 {
   switch (chain) {
     case ChainType.MainNet:
       return mainNetClient;

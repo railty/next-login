@@ -5,6 +5,7 @@ import { createSignTxnsRequest, createSinglePayTxns, getConfirmedTxs, getSignedT
 import { IResult, signTxnScenario, singlePayTxn } from "../scenarios";
 import Dialog from "./Dialog";
 import TxnInfo from "./TxnInfo";
+import algosdk from "algosdk";
 
 export const SinglePay = () => {
   const [dialogPending, setDialogPending] = useState({
@@ -21,7 +22,9 @@ export const SinglePay = () => {
   const { state, dispatch } = useContext(AppContext);
 
   const pay = async ()=>{
-    const txns = await createSinglePayTxns(ChainType.TestNet, state.connector.accounts[0], process.env.NEXT_PUBLIC_TEST1, 0.1, "note", "message");
+    const actAlice = algosdk.mnemonicToSecretKey(process.env.NEXT_PUBLIC_ALICE);
+
+    const txns = await createSinglePayTxns(ChainType.TestNet, state.connector.accounts[0], actAlice.addr, 1, "note", "message");
     const request = await createSignTxnsRequest(txns);
 
     setDialogPending({...dialogPending, show: true});
